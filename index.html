@@ -258,7 +258,35 @@
                 }
 
                 try {
-                    const res = await fetch(API_URL);
+                    const res = await fetch(API_URL, { cache: "no-store" });
+                    if (!res.ok) {
+                        let detail = "";
+                        try {
+                            const contentType = res.headers.get("content-type") || "";
+                            if (contentType.includes("application/json")) {
+                                const errJson = await res.json();
+                                detail =
+                                    errJson?.detail ||
+                                    errJson?.message ||
+                                    JSON.stringify(errJson);
+                            } else {
+                                detail = (await res.text()) || "";
+                            }
+                        } catch {
+                            // ignore parse errors
+                        }
+
+                        const msg = `API error (${res.status})${
+                            detail ? `: ${detail}` : ""
+                        }`;
+                        console.error(msg);
+                        document.getElementById("music-info").innerHTML =
+                            `<span style="color:red;">${msg}</span>`;
+                        lastTrackId = null;
+                        lastTrackState = null;
+                        return;
+                    }
+
                     const data = await res.json();
                     const track = data.track;
                     let newTrackId =
@@ -295,6 +323,7 @@
                             : 0,
                     );
                 } catch (e) {
+                    console.error("Failed to fetch now playing", e);
                     document.getElementById("music-info").innerHTML =
                         '<span style="color:red;">Error loading track info.</span>';
                     lastTrackId = null;
