@@ -113,7 +113,8 @@
                 </div>
                 <nav class="sidebar-links">
                     <a
-                        href="https://github.com/aravindhbalaji04"
+                        id="github-link"
+                        href="#"
                         target="_blank"
                         rel="noopener"
                         style="display: flex; align-items: center; gap: 8px"
@@ -135,7 +136,8 @@
                         GitHub
                     </a>
                     <a
-                        href="https://leetcode.com/aravindhbalaji04/"
+                        id="leetcode-link"
+                        href="#"
                         target="_blank"
                         rel="noopener"
                         style="display: flex; align-items: center; gap: 8px"
@@ -164,7 +166,8 @@
                     "
                 >
                     <a
-                        href="https://drive.google.com/file/d/1m2Bb3V5gJH4QwDB_7DeTXJHsT9rlZsvy/view?usp=sharing"
+                        id="resume-link"
+                        href="#"
                         target="_blank"
                         style="
                             display: inline-block;
@@ -217,18 +220,45 @@
                 </div>
             </main>
         </div>
+        <script src="./config.js"></script>
         <script>
             // === Last.fm Now Playing Poller ===
-            // Now fetch from FastAPI backend proxy
             const POLL_INTERVAL = 5000; // 5 seconds
+            const appConfig = window.APP_CONFIG || {};
+            const API_URL = appConfig.NOW_PLAYING_API_URL || "";
+
+            function applyConfiguredLinks() {
+                const linkMap = [
+                    ["github-link", appConfig.GITHUB_URL],
+                    ["leetcode-link", appConfig.LEETCODE_URL],
+                    ["resume-link", appConfig.RESUME_URL],
+                ];
+
+                linkMap.forEach(([id, href]) => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    if (href) {
+                        el.href = href;
+                    } else {
+                        el.removeAttribute("href");
+                        el.style.opacity = "0.6";
+                        el.style.pointerEvents = "none";
+                    }
+                });
+            }
 
             let lastTrackId = null;
             let lastTrackState = null;
 
             async function fetchNowPlaying() {
-                const url = "http://localhost:8000/api/nowplaying";
+                if (!API_URL) {
+                    document.getElementById("music-info").innerHTML =
+                        '<span style="color:red;">NOW_PLAYING_API_URL is not configured.</span>';
+                    return;
+                }
+
                 try {
-                    const res = await fetch(url);
+                    const res = await fetch(API_URL);
                     const data = await res.json();
                     const track = data.track;
                     let newTrackId =
@@ -299,6 +329,7 @@
             }
 
             // Initial load and polling
+            applyConfiguredLinks();
             fetchNowPlaying();
             setInterval(fetchNowPlaying, POLL_INTERVAL);
         </script>

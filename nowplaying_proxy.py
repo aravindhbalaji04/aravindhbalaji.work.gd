@@ -6,21 +6,35 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Allow CORS for local frontend dev and GitHub Pages
+
+def _parse_frontend_origins():
+    raw = os.getenv("FRONTEND_ORIGINS", "")
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+
+FRONTEND_ORIGINS = _parse_frontend_origins() or ["http://localhost:5500"]
+
+# CORS origins are configured via FRONTEND_ORIGINS.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=FRONTEND_ORIGINS,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-LASTFM_API_KEY = os.getenv("LASTFM_API_KEY", "8453947459c1a6b0e4464db7027e145f")
-LASTFM_USERNAME = os.getenv("LASTFM_USERNAME", "aravindhbalaji")
+LASTFM_API_KEY = os.getenv("LASTFM_API_KEY")
+LASTFM_USERNAME = os.getenv("LASTFM_USERNAME")
 
 
 @app.get("/api/nowplaying")
 def now_playing():
+    if not LASTFM_API_KEY or not LASTFM_USERNAME:
+        raise HTTPException(
+            status_code=500,
+            detail="Missing LASTFM_API_KEY or LASTFM_USERNAME environment variables.",
+        )
+
     url = (
         f"https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks"
         f"&user={LASTFM_USERNAME}&api_key={LASTFM_API_KEY}&format=json&limit=1"
