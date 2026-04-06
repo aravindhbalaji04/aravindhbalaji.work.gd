@@ -1,5 +1,5 @@
 window.APP_CONFIG = {
-    NOW_PLAYING_API_URL: "https://your-render-service.onrender.com/api/nowplaying",
+    NOW_PLAYING_API_URL: "https://aravindhbalaji-work-gd.onrender.com/",
     GITHUB_URL: "https://github.com/aravindhbalaji04",
     LEETCODE_URL: "https://leetcode.com/aravindhbalaji04/",
     RESUME_URL:
